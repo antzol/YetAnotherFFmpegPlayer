@@ -1,0 +1,1 @@
+In this directory must be placed directories of the FFmpeg/Libav library.

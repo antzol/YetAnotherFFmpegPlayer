@@ -1,0 +1,3 @@
+*.pro.user
+ffmpeg/*
+!ffmpeg/readme.txt
