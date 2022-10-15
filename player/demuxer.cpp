@@ -94,10 +94,10 @@ int Demuxer::getFirstProgramStreamByType(int programId, AVMediaType type)
 int Demuxer::getFirstStreamByType(AVMediaType type)
 {
     auto it = std::find_if(streams.begin(), streams.end(), [&type](const auto& item){
-        return item.second->type == type;
+        return item->type == type;
     });
 
-    int idx = (it != streams.end()) ? it->second->index : -1;
+    int idx = (it != streams.end()) ? std::distance(streams.begin(), it) : -1;
     return idx;
 }
 
@@ -351,6 +351,8 @@ bool Demuxer::findStreams()
     if (!inputFormatContext)
         return false;
 
+    streams.resize(inputFormatContext->nb_streams);
+
     QString msg;
     QString msgPattern = QString("Stream: index - %1, id - %2, type - %3.");
 
@@ -600,15 +602,14 @@ bool Demuxer::prepareVideoDecoder(int streamIndex)
     loggable.logMessage(objectName(), QtDebugMsg, "Prepare video decoder.");
     QString msg;
 
-    auto it = streams.find(streamIndex);
-    if (it == streams.end())
+    if (streamIndex < 0 || streamIndex >= streams.size())
     {
         msg = QString("Selected video stream (index = %1) doesn't found.").arg(streamIndex);
         loggable.logMessage(objectName(), QtWarningMsg, msg);
         return false;
     }
 
-    if (it->second->type != AVMEDIA_TYPE_VIDEO)
+    if (streams[streamIndex]->type != AVMEDIA_TYPE_VIDEO)
     {
         msg = QString("Selected stream (index = %1) doesn't video.").arg(streamIndex);
         loggable.logMessage(objectName(), QtWarningMsg, msg);
@@ -654,15 +655,14 @@ bool Demuxer::prepareAudioDecoder(int streamIndex)
 
     QString msg;
 
-    auto it = streams.find(streamIndex);
-    if (it == streams.end())
+    if (streamIndex < 0 || streamIndex >= streams.size())
     {
         msg = QString("Selected audio stream (index = %1) doesn't found.").arg(streamIndex);
         loggable.logMessage(objectName(), QtWarningMsg, msg);
         return false;
     }
 
-    if (it->second->type != AVMEDIA_TYPE_AUDIO)
+    if (streams[streamIndex]->type != AVMEDIA_TYPE_AUDIO)
     {
         msg = QString("Selected stream (index = %1) doesn't audio.").arg(streamIndex);
         loggable.logMessage(objectName(), QtWarningMsg, msg);

@@ -42,7 +42,7 @@ public slots:
 
     void processStartPauseButtonClick();
 
-    void updateStreamLists(const std::unordered_map<int, std::shared_ptr<StreamInfo>> &streams);
+    void updateStreamLists(const std::vector<std::shared_ptr<StreamInfo>> &streams);
     void updateProgramList(const std::map<int, std::shared_ptr<ProgramInfo>> &programs);
 
     void processProgramChange();

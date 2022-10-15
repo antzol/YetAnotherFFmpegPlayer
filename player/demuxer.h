@@ -89,7 +89,7 @@ public slots:
     void writeAudioSampleToSink(const std::shared_ptr<AudioFrame> audioFrame);
 
 signals:
-    void streamsFound(const std::unordered_map<int, std::shared_ptr<StreamInfo>> &streams);
+    void streamsFound(const std::vector<std::shared_ptr<StreamInfo>> &streams);
     void programsFound(const std::map<int, std::shared_ptr<ProgramInfo>> &programs);
 
     void playbackStateChanged(QMediaPlayer::PlaybackState state);
@@ -120,9 +120,10 @@ private:
     int sourceType{-1};
     int rwTimeoutInMilliseconds{0};
 
-    // key - index of the program or the stream
+    // key = program id (SID, service id)
     std::map<int, std::shared_ptr<ProgramInfo>> programs;
-    std::unordered_map<int, std::shared_ptr<StreamInfo>> streams;
+    // index in the vector = index of the stream in the AVFormatContext
+    std::vector<std::shared_ptr<StreamInfo>> streams;
 
     std::atomic<int> activeVideoStreamIndex{-1};
     std::atomic<int> activeAudioStreamIndex{-1};

@@ -112,7 +112,7 @@ void MainWindow::processStartPauseButtonClick()
 // "PID value (if it is not equals 0) - language (if it's presented) - title (if it's presented)"
 //   or, if all elements are not presented:
 // "stream id value"
-void MainWindow::updateStreamLists(const std::unordered_map<int, std::shared_ptr<StreamInfo>> &streams)
+void MainWindow::updateStreamLists(const std::vector<std::shared_ptr<StreamInfo>> &streams)
 {
     videoStreamsComboBox->clear();
     audioStreamsComboBox->clear();
@@ -127,8 +127,9 @@ void MainWindow::updateStreamLists(const std::unordered_map<int, std::shared_ptr
     std::map<int, std::pair<int, std::string>> videoStreams;
     std::map<int, std::pair<int, std::string>> audioStreams;
 
-    for (auto& [idx, streamInfo] : streams)
+    for (int idx = 0; idx < streams.size(); ++idx)
     {
+        std::shared_ptr<StreamInfo> streamInfo = streams[idx];
         std::string txt = streamInfo->id ? std::to_string(streamInfo->id) : "";
         auto it = streamInfo->properties.find(AVStrings::Language);
         if (it != streamInfo->properties.end())
