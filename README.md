@@ -1,7 +1,11 @@
 # Yet Another FFmpeg Player
 Simple media player based on Qt framework and FFmpeg/LibAV library.
 
-This project focuses on how FFmpeg works with MPEG2-TS transport streams and broadcast-specific video (e.g. interlaced video, or 720x576 resolution with 16 empty pixels per line, etc.), but also works with regular media files.
+Allows to play media from:
+- file
+- UDP multicast
+
+This project focuses on how FFmpeg works with MPEG2-TS transport streams and broadcast-specific video (e.g. interlaced video, or 720x576 resolution with 16 blanking pixels per line, etc.), but also works with regular media files.
 
 ## Some screenshots
 
@@ -11,3 +15,6 @@ This project focuses on how FFmpeg works with MPEG2-TS transport streams and bro
 ## TODO
 
 - Display information about currently playing video and audio streams.
+- Show subtitles.
+- Show audio level indicator.
+- etc...
