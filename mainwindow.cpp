@@ -37,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(pauseAction, &QAction::triggered, demuxer, &Demuxer::pause, Qt::QueuedConnection);
     connect(stopAction, &QAction::triggered, demuxer, &Demuxer::stop, Qt::QueuedConnection);
     connect(demuxer, &Demuxer::playbackStateChanged, this, &MainWindow::processPlayerStateChange);
+    connect(demuxer, &Demuxer::startLockRequired, this, &MainWindow::processStartLockRequirement, Qt::DirectConnection);
 
     connect(demuxer, &Demuxer::streamsFound, this, &MainWindow::updateStreamLists, Qt::QueuedConnection);
     connect(demuxer, &Demuxer::programsFound, this, &MainWindow::updateProgramList, Qt::QueuedConnection);
@@ -250,6 +251,12 @@ void MainWindow::processPlayerStateChange(QMediaPlayer::PlaybackState state)
         stopAction->setEnabled(false);
         break;
     }
+}
+
+//---------------------------------------------------------------------------------------
+void MainWindow::processStartLockRequirement(bool locked)
+{
+    playPauseButton->setEnabled(!locked);
 }
 
 //---------------------------------------------------------------------------------------

@@ -48,6 +48,7 @@ public slots:
     void processProgramChange();
     void processStreamChange(int index);
     void processPlayerStateChange(QMediaPlayer::PlaybackState state);
+    void processStartLockRequirement(bool locked);
 
 signals:
     void configureAndStartPlayer(const QString &path, Demuxer::SourceType type);

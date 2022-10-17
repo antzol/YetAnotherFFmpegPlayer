@@ -94,6 +94,8 @@ signals:
 
     void playbackStateChanged(QMediaPlayer::PlaybackState state);
 
+    void startLockRequired(bool locked);
+
 private:
     void initPlaybackThread();
     bool prepare();

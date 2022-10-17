@@ -275,70 +275,79 @@ void Demuxer::initPlaybackThread()
 //---------------------------------------------------------------------------------------
 bool Demuxer::prepare()
 {
-    [[maybe_unused]] bool ok{false};
+    [[maybe_unused]] bool ok{true};
 
+    emit startLockRequired(true);
     loggable.logMessage(objectName(), QtDebugMsg, QString("Load media source: %1").arg(sourcePath));
 
-    loggable.logMessage(objectName(), QtDebugMsg, "Allocate input context...");
-    inputFormatContext = avformat_alloc_context();
-    if (!inputFormatContext)
+    try
     {
-        loggable.logMessage(objectName(), QtCriticalMsg, "Could not allocate AVFormatContext.");
-        return false;
+        loggable.logMessage(objectName(), QtDebugMsg, "Allocate input context...");
+        inputFormatContext = avformat_alloc_context();
+        if (!inputFormatContext)
+        {
+            loggable.logMessage(objectName(), QtCriticalMsg, "Could not allocate AVFormatContext.");
+            throw false;
+        }
+
+        AVDictionary *options = nullptr;
+        if (sourceType == SourceType::Stream && rwTimeoutInMilliseconds > 0)
+        {
+            QString msg = QString("Set interrupt callback and blocking RW operations timeout: "
+                                  "%1 milliseconds.").arg(rwTimeoutInMilliseconds);
+            loggable.logMessage(objectName(), QtDebugMsg, msg);
+
+            inputFormatContext->interrupt_callback.callback = interruptCallback;
+            inputFormatContext->interrupt_callback.opaque = this;// inputFormatContext;
+        }
+
+        timer.restart();
+        loggable.logMessage(objectName(), QtDebugMsg, "Open input context...");
+        if (avformat_open_input(&inputFormatContext, sourcePath.toUtf8().data(), NULL, &options) < 0)
+        {
+            loggable.logMessage(objectName(), QtCriticalMsg, QString("Could not open source: %1").arg(sourcePath));
+            throw false;
+        }
+
+        loggable.logMessage(objectName(), QtDebugMsg, "Find stream info...");
+        if (avformat_find_stream_info(inputFormatContext, NULL) < 0)
+        {
+            loggable.logMessage(objectName(), QtCriticalMsg, "Could not find stream information.");
+            throw false;
+        }
+
+        if (!findStreams())
+        {
+            loggable.logMessage(objectName(), QtWarningMsg, "Valid streams does not found.");
+            throw false;
+        }
+
+        findPrograms();
+
+        // it's left for debugging
+        //    int videoIndex = getFirstStreamByType(AVMEDIA_TYPE_VIDEO);
+        //    if (videoIndex != -1)
+        //    {
+        //        ok = prepareVideoDecoder(videoIndex);
+        //        if (!ok)
+        //            throw false;
+        //    }
+
+        //    int audioIndex = getFirstStreamByType(AVMEDIA_TYPE_AUDIO);
+        //    if (audioIndex != -1)
+        //    {
+        //        ok = prepareAudioDecoder(audioIndex);
+        //        if (!ok)
+        //            throw false;
+        //    }
+    }
+    catch (const bool &e)
+    {
+        ok = e;
     }
 
-    AVDictionary *options = nullptr;
-    if (sourceType == SourceType::Stream && rwTimeoutInMilliseconds > 0)
-    {
-        QString msg = QString("Set interrupt callback and blocking RW operations timeout: "
-                              "%1 milliseconds.").arg(rwTimeoutInMilliseconds);
-        loggable.logMessage(objectName(), QtDebugMsg, msg);
-
-        inputFormatContext->interrupt_callback.callback = interruptCallback;
-        inputFormatContext->interrupt_callback.opaque = this;// inputFormatContext;
-    }
-
-    timer.restart();
-    loggable.logMessage(objectName(), QtDebugMsg, "Open input context...");
-    if (avformat_open_input(&inputFormatContext, sourcePath.toUtf8().data(), NULL, &options) < 0)
-    {
-        loggable.logMessage(objectName(), QtCriticalMsg, QString("Could not open source: %1").arg(sourcePath));
-        return false;
-    }
-
-    loggable.logMessage(objectName(), QtDebugMsg, "Find stream info...");
-    if (avformat_find_stream_info(inputFormatContext, NULL) < 0)
-    {
-        loggable.logMessage(objectName(), QtCriticalMsg, "Could not find stream information.");
-        return false;
-    }
-
-    if (!findStreams())
-    {
-        loggable.logMessage(objectName(), QtWarningMsg, "Valid streams does not found.");
-        return false;
-    }
-
-    findPrograms();
-
-    // it's left for debugging
-//    int videoIndex = getFirstStreamByType(AVMEDIA_TYPE_VIDEO);
-//    if (videoIndex != -1)
-//    {
-//        ok = prepareVideoDecoder(videoIndex);
-//        if (!ok)
-//            return false;
-//    }
-
-//    int audioIndex = getFirstStreamByType(AVMEDIA_TYPE_AUDIO);
-//    if (audioIndex != -1)
-//    {
-//        ok = prepareAudioDecoder(audioIndex);
-//        if (!ok)
-//            return false;
-//    }
-
-    return true;
+    emit startLockRequired(false);
+    return ok;
 }
 
 //---------------------------------------------------------------------------------------
