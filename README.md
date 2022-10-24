@@ -12,9 +12,11 @@ This project focuses on how FFmpeg works with MPEG2-TS transport streams and bro
 - Playback of the MPTS from file with recorded MPEG2-TS stream:
 ![Screenshot 1 - Playback of the MPTS from file with recorded MPEG2-TS stream](https://github.com/antzol/YetAnotherFFmpegPlayer/blob/main/doc/Playing%20MPTS%20stream%20from%20the%20file.png)
 
+- Playback of media from mkv file:
+![Screenshot 2 - Playback of media from mkv file](https://github.com/antzol/YetAnotherFFmpegPlayer/blob/main/doc/Playing%20media%20from%20mkv%20file.png)
+
 ## TODO
 
 - Display information about currently playing video and audio streams.
 - Show subtitles.
-- Show audio level indicator.
 - etc...
