@@ -50,6 +50,10 @@ Demuxer::Demuxer(QObject *parent)
         loggable.logMessage(objectName(), QtCriticalMsg, "Could not allocate packet.");
         return;
     }
+
+    audioLevelMeter = std::make_shared<AudioLevelMeter>(new AudioLevelMeter());
+
+    connect(audioLevelMeter.get(), &AudioLevelMeter::audioLevelsCalculated, this, &Demuxer::audioLevelsCalculated);
 }
 
 //---------------------------------------------------------------------------------------
@@ -243,6 +247,8 @@ void Demuxer::writeAudioSampleToSink(const std::shared_ptr<AudioFrame> audioFram
 {
     if (audioOutput && audioSink)
         audioOutput->write(audioFrame->getData(), audioFrame->getSize());
+
+//    audioLevelMeter.receiveAudioSample(audioFrame);
 }
 
 //---------------------------------------------------------------------------------------
@@ -687,14 +693,29 @@ bool Demuxer::prepareAudioDecoder(int streamIndex)
     bool ok = audioDecoder->open(streams[streamIndex]->stream);
     if (ok)
     {
+        audioDecoder->setAudioLevelMeter(audioLevelMeter);
         QAudioFormat format = audioDecoder->audioFormat();
         QAudioDevice defaultAudioOutput(QMediaDevices::defaultAudioOutput());
+        int inChannelsCount = audioDecoder->inputChannelCount();
 
         if (defaultAudioOutput.mode() == QAudioDevice::Output)
         {
             audioSink = new QAudioSink(defaultAudioOutput, format);
+            QAudioFormat audioOutputFormat = audioSink->format();
+
+            msg = QString("Check output audio device format (Qt):\n"
+                          "- number of channels - %1\n"
+                          "- sample rate - %2\n"
+                          "- sample format - %3")
+                    .arg(audioOutputFormat.channelCount())
+                    .arg(audioOutputFormat.sampleRate())
+                    .arg(mapQSampleFormatToString(format.sampleFormat()));
+            loggable.logMessage(objectName(), QtDebugMsg, msg);
+
             audioOutput = audioSink->start();
         }
+        audioLevelMeter->setChannelCount(inChannelsCount);
+        emit currentAudioChannelsCountUpdated(inChannelsCount);
         activeAudioStreamIndex.store(streamIndex);
     }
 

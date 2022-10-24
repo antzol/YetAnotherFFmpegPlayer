@@ -41,6 +41,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(demuxer, &Demuxer::streamsFound, this, &MainWindow::updateStreamLists, Qt::QueuedConnection);
     connect(demuxer, &Demuxer::programsFound, this, &MainWindow::updateProgramList, Qt::QueuedConnection);
+    connect(demuxer, &Demuxer::currentAudioChannelsCountUpdated, this, &MainWindow::updateAudioIndicatorsCount);
+    connect(demuxer, &Demuxer::audioLevelsCalculated, this, &MainWindow::updateAudioIndicatorLevels);
 
     connect(this, &MainWindow::selectedStreamChanged, demuxer, &Demuxer::changeSelectedStream, Qt::QueuedConnection);
 
@@ -194,6 +196,33 @@ void MainWindow::updateProgramList(const std::map<int, std::shared_ptr<ProgramIn
 }
 
 //---------------------------------------------------------------------------------------
+void MainWindow::updateAudioIndicatorsCount(int audioChannelsCount)
+{
+    while (audioIndicators.size() > audioChannelsCount)
+    {
+        AudioLevelWidget *indicator = audioIndicators.back();
+        audioIndicators.pop_back();
+        delete indicator;
+    }
+
+    while (audioIndicators.size() < audioChannelsCount)
+    {
+        AudioLevelWidget *indicator = new AudioLevelWidget();
+        mediaLayout->addWidget(indicator);
+        audioIndicators.push_back(indicator);
+    }
+}
+
+//---------------------------------------------------------------------------------------
+void MainWindow::updateAudioIndicatorLevels(const std::vector<double> &levels)
+{
+    for (int i = 0; i < levels.size() && i < audioIndicators.size(); ++i)
+    {
+        audioIndicators[i]->setLevel(levels[i]);
+    }
+}
+
+//---------------------------------------------------------------------------------------
 void MainWindow::processProgramChange()
 {
     bool ok;
@@ -308,6 +337,10 @@ void MainWindow::createMainUiLayout()
 
     videoWidget = new QVideoWidget(this);
 
+    mediaLayout = new QHBoxLayout();
+
+    mediaLayout->addWidget(videoWidget, 1);
+
     playAction = new QAction(QIcon(":/icons/play"), tr("Play"), this);
     pauseAction = new QAction(QIcon(":/icons/pause"), tr("Pause"), this);
     stopAction = new QAction(QIcon(":/icons/stop"), tr("Stop"), this);
@@ -333,7 +366,7 @@ void MainWindow::createMainUiLayout()
 
     QVBoxLayout *vertLayout = new QVBoxLayout();
     vertLayout->addLayout(ctrlLayout);
-    vertLayout->addWidget(videoWidget, 1);
+    vertLayout->addLayout(mediaLayout, 1);
     vertLayout->addLayout(btnLayout);
 
     QWidget *wgt = new QWidget(this);

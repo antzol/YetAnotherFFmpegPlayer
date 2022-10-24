@@ -30,8 +30,10 @@ extern "C" {
 
 #include "audiodecoder.h"
 #include "audioframe.h"
+#include "audiolevelmeter.h"
 #include "videodecoder.h"
 #include "videoframe.h"
+#include "utils.h"
 
 
 struct StreamInfo
@@ -96,6 +98,9 @@ signals:
 
     void startLockRequired(bool locked);
 
+    void currentAudioChannelsCountUpdated(int numberOfChannels);
+    void audioLevelsCalculated(const std::vector<double> &levels);
+
 private:
     void initPlaybackThread();
     bool prepare();
@@ -151,6 +156,7 @@ private:
     QVideoSink *videoSink{nullptr};
     QAudioSink *audioSink{nullptr};
     QIODevice *audioOutput{nullptr};
+    std::shared_ptr<AudioLevelMeter> audioLevelMeter;
 
     Loggable loggable;
 };

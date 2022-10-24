@@ -6,6 +6,7 @@
 #include <QAction>
 #include <QComboBox>
 #include <QDockWidget>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QLineEdit>
 #include <QMenu>
@@ -23,6 +24,7 @@
 #include "loggable.h"
 
 #include "demuxer.h"
+#include "audiolevelwidget.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -44,6 +46,8 @@ public slots:
 
     void updateStreamLists(const std::vector<std::shared_ptr<StreamInfo>> &streams);
     void updateProgramList(const std::map<int, std::shared_ptr<ProgramInfo>> &programs);
+    void updateAudioIndicatorsCount(int audioChannelsCount);
+    void updateAudioIndicatorLevels(const std::vector<double> &levels);
 
     void processProgramChange();
     void processStreamChange(int index);
@@ -73,6 +77,7 @@ private:
     QPushButton *detailsButton;
     QPushButton *settingsButton;
 
+    QHBoxLayout *mediaLayout;
     QVideoWidget *videoWidget;
 
     QToolButton *playPauseButton;
@@ -93,6 +98,8 @@ private:
 
     Demuxer *demuxer;
     QThread demuxThread;
+
+    std::vector<AudioLevelWidget*> audioIndicators;
 
     Loggable loggable;
 };

@@ -23,7 +23,7 @@ public:
     explicit Decoder(const QString& name, QObject *parent = nullptr);
     virtual ~Decoder();
 
-    bool open(AVStream *stream);
+    virtual bool open(AVStream *stream);
     bool isOpen() const;
 
     int decodePacket(const AVPacket *pkt);
