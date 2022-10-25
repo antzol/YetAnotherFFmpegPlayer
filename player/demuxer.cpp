@@ -44,15 +44,7 @@ Demuxer::Demuxer(QObject *parent)
 {
     setObjectName("Demuxer");
 
-    receivedPacket = av_packet_alloc();
-    if (!receivedPacket)
-    {
-        loggable.logMessage(objectName(), QtCriticalMsg, "Could not allocate packet.");
-        return;
-    }
-
     audioLevelMeter = std::make_shared<AudioLevelMeter>(new AudioLevelMeter());
-
     connect(audioLevelMeter.get(), &AudioLevelMeter::audioLevelsCalculated, this, &Demuxer::audioLevelsCalculated);
 }
 
@@ -60,9 +52,6 @@ Demuxer::Demuxer(QObject *parent)
 Demuxer::~Demuxer()
 {
     stop();
-
-    if (receivedPacket)
-        av_packet_free(&receivedPacket);
 }
 
 //---------------------------------------------------------------------------------------
@@ -247,8 +236,6 @@ void Demuxer::writeAudioSampleToSink(const std::shared_ptr<AudioFrame> audioFram
 {
     if (audioOutput && audioSink)
         audioOutput->write(audioFrame->getData(), audioFrame->getSize());
-
-//    audioLevelMeter.receiveAudioSample(audioFrame);
 }
 
 //---------------------------------------------------------------------------------------
@@ -288,6 +275,14 @@ bool Demuxer::prepare()
 
     try
     {
+        loggable.logMessage(objectName(), QtDebugMsg, "Allocate packet for receiving...");
+        receivedPacket = av_packet_alloc();
+        if (!receivedPacket)
+        {
+            loggable.logMessage(objectName(), QtCriticalMsg, "Could not allocate packet.");
+            throw false;
+        }
+
         loggable.logMessage(objectName(), QtDebugMsg, "Allocate input context...");
         inputFormatContext = avformat_alloc_context();
         if (!inputFormatContext)
@@ -752,11 +747,14 @@ void Demuxer::reset()
     ready = false;
     startDTS = -1;
 
+    resetVideoDecoder();
+    resetAudioDecoder();
+
     if (inputFormatContext)
         avformat_close_input(&inputFormatContext);
 
-    resetVideoDecoder();
-    resetAudioDecoder();
+    if (receivedPacket)
+        av_packet_free(&receivedPacket);
 
     programs.clear();
     streams.clear();
