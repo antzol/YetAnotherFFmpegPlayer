@@ -56,12 +56,13 @@ void AudioLevelMeter::receiveAudioSample(AVFrame *avFrame)
         samplesExtractor->pushAvFrame(avFrame);
 
         std::vector<int16_t> samples = samplesExtractor->getNextSamplesForAllChannels();
+        std::vector<double> outputLevels;
         while (!samples.empty())
         {
-            std::vector<double> outputLevels = levelCalculator->pushSamples(samples);
-            emit audioLevelsCalculated(outputLevels);
+            outputLevels = levelCalculator->pushSamples(samples);
             samples = samplesExtractor->getNextSamplesForAllChannels();
         }
+        emit audioLevelsCalculated(outputLevels);
     }
 }
 
