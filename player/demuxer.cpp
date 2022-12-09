@@ -562,11 +562,11 @@ void Demuxer::playing()
         if (result < 0)
         {
             // ignore decoding errors due to possible scrambling, only logging
-//            QString msg = QString("ERROR of packet decoding (stream (index/id, type): %1/%2, %3.")
-//                    .arg(receivedPacket->stream_index)
-//                    .arg(streams[receivedPacket->stream_index]->id)
-//                    .arg(mapAvMediaTypeToString(streams[receivedPacket->stream_index]->type));
-//            loggable.logAvError(objectName(), QtWarningMsg, msg, result);
+            QString msg = QString("ERROR of packet decoding (stream (index/id, type): %1/%2, %3.")
+                    .arg(receivedPacket->stream_index)
+                    .arg(streams[receivedPacket->stream_index]->id)
+                    .arg(mapAvMediaTypeToString(streams[receivedPacket->stream_index]->type));
+            loggable.logAvError(objectName(), QtWarningMsg, msg, result);
         }
     }
     loggable.logMessage(objectName(), QtDebugMsg, "Exit from the playing loop.");
@@ -581,19 +581,29 @@ void Demuxer::playing()
 //---------------------------------------------------------------------------------------
 void Demuxer::waitForReachPtsTime(AVPacket *packet)
 {
+    if (packet->dts == AV_NOPTS_VALUE)
+    {
+        QString msg = QString("ERROR wait for reach DTS time - AV_NOPTS_VALUE, stream (index/id, type): %1/%2, %3.")
+                .arg(receivedPacket->stream_index)
+                .arg(streams[receivedPacket->stream_index]->id)
+                .arg(mapAvMediaTypeToString(streams[receivedPacket->stream_index]->type));
+        loggable.logAvError(objectName(), QtWarningMsg, msg, -1);
+        return;
+    }
+
     AVRational time_base = streams[packet->stream_index]->stream->time_base;
     AVRational time_base_q = {1,AV_TIME_BASE};
-    int64_t pts_time = av_rescale_q(packet->dts, time_base, time_base_q);
+    int64_t dts_time = av_rescale_q(packet->dts, time_base, time_base_q);
     if (startDTS < 0)
     {
-        startDTS = pts_time;
+        startDTS = dts_time;
         startTime = av_gettime();
     }
     else
     {
         int64_t nowTime = av_gettime() - startTime;
-        if ((pts_time - startDTS) > nowTime)
-            av_usleep(pts_time - startDTS - nowTime);
+        if ((dts_time - startDTS) > nowTime)
+            av_usleep(dts_time - startDTS - nowTime);
     }
 }
 

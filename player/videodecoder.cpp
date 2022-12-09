@@ -111,9 +111,9 @@ int VideoDecoder::outputVideoFrame(AVFrame *avFrame)
 void VideoDecoder::createDeinterlacingFiltersQueue()
 {
     loggable.logMessage(objectName(), QtDebugMsg, "Create deinterlacing filters queue...");
-//    deinterlacer = new FFmpegFilter("Deinterlacer");
+    deinterlacer = new FFmpegFilter("Deinterlacer");
     cropper = new FFmpegFilter("Predeinterlace Cropper");
-//    cropper->setNextFilter(deinterlacer);
+    cropper->setNextFilter(deinterlacer);
     deinterlacingQueueHead = cropper;
 //    deinterlacingQueueHead = deinterlacer;
 }
