@@ -32,7 +32,7 @@ private:
     int convertFrame(AVFrame *avFrame, FFmpegFilter *filter);
     int outputVideoFrame(AVFrame *avFrame);
 
-    void createDeinterlacingFiltersQueue();
+    void createDeinterlacingFiltersQueue(AVFrame *avFrame);
     void initDeinterlacer(AVFrame *frame);
     void initCropper(AVFrame *frame);
 

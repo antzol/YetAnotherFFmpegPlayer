@@ -111,6 +111,8 @@ constexpr QVideoFrameFormat::PixelFormat mapPixelFormat(AVPixelFormat avFormat)
     }
 }
 
+//---------------------------------------------------------------------------------------
+QString mapAVActiveFormatDescriptionToString(AVActiveFormatDescription afd);
 
 //=======================================================================================
 // Audio formats...

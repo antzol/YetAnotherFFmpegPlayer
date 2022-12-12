@@ -31,6 +31,7 @@ SOURCES += \
     player/demuxer.cpp \
     player/ffmpegfilter.cpp \
     player/frame.cpp \
+    player/utils.cpp \
     player/videodecoder.cpp \
     player/videoframe.cpp \
     ui/detailsdockwidget.cpp \

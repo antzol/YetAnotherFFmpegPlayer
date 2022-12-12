@@ -35,7 +35,7 @@ int VideoDecoder::outputFrame(AVFrame *avFrame)
     else
     {
         if (!deinterlacingQueueHead)
-            createDeinterlacingFiltersQueue();
+            createDeinterlacingFiltersQueue(avFrame);
         size = convertFrame(avFrame, deinterlacingQueueHead);
     }
     return size;
@@ -108,13 +108,24 @@ int VideoDecoder::outputVideoFrame(AVFrame *avFrame)
 }
 
 //---------------------------------------------------------------------------------------
-void VideoDecoder::createDeinterlacingFiltersQueue()
+void VideoDecoder::createDeinterlacingFiltersQueue(AVFrame *avFrame)
 {
     loggable.logMessage(objectName(), QtDebugMsg, "Create deinterlacing filters queue...");
+
     deinterlacer = new FFmpegFilter("Deinterlacer");
-    cropper = new FFmpegFilter("Predeinterlace Cropper");
-    cropper->setNextFilter(deinterlacer);
-    deinterlacingQueueHead = cropper;
+
+    /// FIXME: remove hardcoded crop filter setting
+    if (avFrame->width == 720 && avFrame->height == 576 &&
+            avFrame->sample_aspect_ratio.num == 16 && avFrame->sample_aspect_ratio.den == 11)
+    {
+        cropper = new FFmpegFilter("Predeinterlace Cropper");
+        cropper->setNextFilter(deinterlacer);
+        deinterlacingQueueHead = cropper;
+    }
+    else
+    {
+        deinterlacingQueueHead = deinterlacer;
+    }
 
     // for tests
 //    deinterlacingQueueHead = deinterlacer;
