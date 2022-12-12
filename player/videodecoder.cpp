@@ -115,6 +115,8 @@ void VideoDecoder::createDeinterlacingFiltersQueue()
     cropper = new FFmpegFilter("Predeinterlace Cropper");
     cropper->setNextFilter(deinterlacer);
     deinterlacingQueueHead = cropper;
+
+    // for tests
 //    deinterlacingQueueHead = deinterlacer;
 }
 

@@ -36,7 +36,7 @@ int VideoFrame::fromAvFrame(const AVFrame *avFrame)
 
     if (pixelFormat == QVideoFrameFormat::Format_Invalid)
     {
-        pixelFormat = QVideoFrameFormat::Format_ARGB8888;
+        pixelFormat = QVideoFrameFormat::Format_YUV420P;
         dstAVFormat = mapPixelFormat(pixelFormat);
     }
     int dstHeight = avFrame->height;
