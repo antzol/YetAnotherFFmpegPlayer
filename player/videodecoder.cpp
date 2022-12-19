@@ -36,7 +36,7 @@ int VideoDecoder::outputFrame(AVFrame *avFrame)
     {
         if (!deinterlacingQueueHead)
             createDeinterlacingFiltersQueue(avFrame);
-        size = convertFrame(avFrame, deinterlacingQueueHead);
+        size = convertFrame(avFrame, deinterlacer);
     }
     return size;
 }
@@ -52,6 +52,12 @@ int VideoDecoder::convertFrame(AVFrame *avFrame, FFmpegFilter *filter)
 {
     int size = 0;
     int result;
+
+    /// FIXME: remove hardcoded crop filter setting
+    if (avFrame->interlaced_frame && isNeedCropLineTo704px(avFrame))
+        filter->setNextFilter(cropper);
+    else
+        filter->setNextFilter(nullptr);
 
     if (!filter->isReady())
     {
@@ -113,22 +119,8 @@ void VideoDecoder::createDeinterlacingFiltersQueue(AVFrame *avFrame)
     loggable.logMessage(objectName(), QtDebugMsg, "Create deinterlacing filters queue...");
 
     deinterlacer = new FFmpegFilter("Deinterlacer");
-
-    /// FIXME: remove hardcoded crop filter setting
-    if (avFrame->width == 720 && avFrame->height == 576 &&
-            avFrame->sample_aspect_ratio.num == 16 && avFrame->sample_aspect_ratio.den == 11)
-    {
-        cropper = new FFmpegFilter("Predeinterlace Cropper");
-        cropper->setNextFilter(deinterlacer);
-        deinterlacingQueueHead = cropper;
-    }
-    else
-    {
-        deinterlacingQueueHead = deinterlacer;
-    }
-
-    // for tests
-//    deinterlacingQueueHead = deinterlacer;
+    cropper = new FFmpegFilter("Predeinterlace Cropper");
+    deinterlacingQueueHead = cropper;
 }
 
 //---------------------------------------------------------------------------------------
@@ -177,7 +169,6 @@ void VideoDecoder::initCropper(AVFrame *frame)
     }
 
     QString filter{"crop"};
-//    QString filterParams = QString("%1:%2:0:0:0:1").arg(frame->width + frameFix).arg(frame->height);
     QString filterParams = QString("w=%1:h=%2:x=0:y=0").arg(frame->width + frameFix).arg(frame->height);
 
     char args[512];
@@ -193,6 +184,15 @@ void VideoDecoder::initCropper(AVFrame *frame)
 
     QString inputParams{args};
     cropper->init(filter, filterParams, inputParams);
+}
+
+//---------------------------------------------------------------------------------------
+bool VideoDecoder::isNeedCropLineTo704px(AVFrame *avFrame)
+{
+    return avFrame->width == 720 &&
+            avFrame->height == 576 &&
+            avFrame->sample_aspect_ratio.num == 16 &&
+            avFrame->sample_aspect_ratio.den == 11;
 }
 
 //---------------------------------------------------------------------------------------
