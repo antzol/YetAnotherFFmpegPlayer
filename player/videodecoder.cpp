@@ -34,7 +34,7 @@ int VideoDecoder::outputFrame(AVFrame *avFrame)
     }
     else
     {
-        if (!deinterlacingQueueHead)
+        if (!deinterlacer || !cropper)
             createDeinterlacingFiltersQueue(avFrame);
         size = convertFrame(avFrame, deinterlacer);
     }
@@ -120,7 +120,6 @@ void VideoDecoder::createDeinterlacingFiltersQueue(AVFrame *avFrame)
 
     deinterlacer = new FFmpegFilter("Deinterlacer");
     cropper = new FFmpegFilter("Predeinterlace Cropper");
-    deinterlacingQueueHead = cropper;
 }
 
 //---------------------------------------------------------------------------------------

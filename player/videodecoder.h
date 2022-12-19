@@ -41,7 +41,6 @@ private:
     QVideoFrame m_videoFrame;
     QVideoFrameFormat::PixelFormat m_pixelFormat;
 
-    FFmpegFilter *deinterlacingQueueHead{nullptr};
     FFmpegFilter *deinterlacer{nullptr};
     FFmpegFilter *cropper{nullptr};
 
