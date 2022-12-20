@@ -720,6 +720,7 @@ bool Demuxer::prepareAudioDecoder(int streamIndex)
             audioOutput = audioSink->start();
         }
         audioLevelMeter->setChannelCount(inChannelsCount);
+        audioLevelMeter->setSampleRate(format.sampleRate());
         emit currentAudioChannelsCountUpdated(inChannelsCount);
         activeAudioStreamIndex.store(streamIndex);
     }

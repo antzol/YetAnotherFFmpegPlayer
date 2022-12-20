@@ -25,6 +25,32 @@ void AudioLevelMeter::setChannelCount(int numberOfChannels)
 }
 
 //---------------------------------------------------------------------------------------
+void AudioLevelMeter::setSampleRate(int rate)
+{
+    if (rate <= 0)
+    {
+        QString msg = QString("INVALID value of the sampling rate: %1").arg(rate);
+        loggable.logMessage(objectName(), QtDebugMsg, msg);
+        return;
+    }
+    sampleRate = rate;
+    numberOfSamplesToUpdate = sampleRate / updateRate;
+}
+
+//---------------------------------------------------------------------------------------
+void AudioLevelMeter::setUpdateRate(int rate)
+{
+    if (rate <= 0)
+    {
+        QString msg = QString("INVALID value of the updating rate: %1").arg(rate);
+        loggable.logMessage(objectName(), QtDebugMsg, msg);
+        return;
+    }
+    updateRate = rate;
+    numberOfSamplesToUpdate = sampleRate / updateRate;
+}
+
+//---------------------------------------------------------------------------------------
 void AudioLevelMeter::receiveAudioSample(AVFrame *avFrame)
 {
     AVSampleFormat avSampleFormat = static_cast<AVSampleFormat>(avFrame->format);
@@ -61,8 +87,13 @@ void AudioLevelMeter::receiveAudioSample(AVFrame *avFrame)
         {
             outputLevels = levelCalculator->pushSamples(samples);
             samples = samplesExtractor->getNextSamplesForAllChannels();
+
+            if (++sampleCount == numberOfSamplesToUpdate)
+            {
+                sampleCount = 0;
+                emit audioLevelsCalculated(outputLevels);
+            }
         }
-        emit audioLevelsCalculated(outputLevels);
     }
 }
 
