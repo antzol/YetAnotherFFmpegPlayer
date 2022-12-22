@@ -9,6 +9,8 @@ extern "C" {
 #include <libavformat/avformat.h>
 }
 
+QString mapAVActiveFormatDescriptionToString(AVActiveFormatDescription afd);
+
 namespace AVStrings
 {
 constexpr const char* Language{"language"};
@@ -112,7 +114,37 @@ constexpr QVideoFrameFormat::PixelFormat mapPixelFormat(AVPixelFormat avFormat)
 }
 
 //---------------------------------------------------------------------------------------
-QString mapAVActiveFormatDescriptionToString(AVActiveFormatDescription afd);
+constexpr const char* mapAvFieldOrderToString(AVFieldOrder order)
+{
+    switch (order)
+    {
+    case AV_FIELD_PROGRESSIVE: return "Progressive";
+    case AV_FIELD_TT:          return "Top coded first, top displayed first";
+    case AV_FIELD_BB:          return "Bottom coded first, bottom displayed first";
+    case AV_FIELD_TB:          return "Top coded first, bottom displayed first";
+    case AV_FIELD_BT:          return "Bottom coded first, top displayed first";
+    case AV_FIELD_UNKNOWN:
+    default:
+                               return "UNKNOWN";
+    }
+}
+
+//---------------------------------------------------------------------------------------
+constexpr const char* mapAvDiscardToString(AVDiscard type)
+{
+    switch (type)
+    {
+    case AVDISCARD_NONE:     return "discard nothing";
+    case AVDISCARD_DEFAULT:  return "discard useless packets like 0 size packets in avi";
+    case AVDISCARD_NONREF:   return "discard all non reference";
+    case AVDISCARD_BIDIR:    return "discard all bidirectional frames";
+    case AVDISCARD_NONINTRA: return "discard all non intra frames";
+    case AVDISCARD_NONKEY:   return "discard all frames except keyframes";
+    case AVDISCARD_ALL:      return "discard all";
+    default:
+                             return "UNKNOWN";
+    }
+}
 
 //=======================================================================================
 // Audio formats...
@@ -190,6 +222,26 @@ constexpr const char* mapQSampleFormatToString(QAudioFormat::SampleFormat format
     case QAudioFormat::Int16:   return "SIGNED 16 BITS";
     case QAudioFormat::Int32:   return "SIGNED 32 BITS";
     case QAudioFormat::Float:   return "FLOAT";
+    default:
+        return "UNKNOWN";
+    }
+}
+
+//---------------------------------------------------------------------------------------
+constexpr const char* mapAvAudioServiceTypeToString(AVAudioServiceType type)
+{
+    switch (type)
+    {
+    case AV_AUDIO_SERVICE_TYPE_MAIN:              return "MAIN";
+    case AV_AUDIO_SERVICE_TYPE_EFFECTS:           return "EFFECTS";
+    case AV_AUDIO_SERVICE_TYPE_VISUALLY_IMPAIRED: return "VISUALLY_IMPAIRED";
+    case AV_AUDIO_SERVICE_TYPE_HEARING_IMPAIRED:  return "HEARING_IMPAIRED";
+    case AV_AUDIO_SERVICE_TYPE_DIALOGUE:          return "DIALOGUE";
+    case AV_AUDIO_SERVICE_TYPE_COMMENTARY:        return "COMMENTARY";
+    case AV_AUDIO_SERVICE_TYPE_EMERGENCY:         return "EMERGENCY";
+    case AV_AUDIO_SERVICE_TYPE_VOICE_OVER:        return "VOICE_OVER";
+    case AV_AUDIO_SERVICE_TYPE_KARAOKE:           return "KARAOKE";
+    case AV_AUDIO_SERVICE_TYPE_NB:                return "Not part of ABI";
     default:
         return "UNKNOWN";
     }

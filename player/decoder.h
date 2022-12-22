@@ -30,14 +30,20 @@ public:
     virtual int outputFrame(AVFrame *avFrame) = 0;
 
 protected:
+    void retrieveDecoderParams();
     void retrieveFrameParams();
+
+    void logDecoderParams();
     void logFrameParams();
+
+    void logParams(QString& initString, const std::map<QString, QString>& params);
 
     AVCodecContext *codecContext{nullptr};
     AVFrame *frame{nullptr};
 
     Loggable loggable;
 
+    std::map<QString, QString> decoderParams;
     std::map<QString, QString> frameParams;
 };
 
