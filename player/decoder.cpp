@@ -40,6 +40,10 @@ bool Decoder::open(AVStream *stream)
             .arg(streamIndex).arg(streamId).arg(codec->name, codec->long_name);
     loggable.logMessage(objectName(), QtDebugMsg, msg);
 
+    msg = QString("Max low resolution (lowres) value supported by the decoder: %1")
+            .arg(codec->max_lowres);
+    loggable.logMessage(objectName(), QtDebugMsg, msg);
+
     codecContext = avcodec_alloc_context3(codec);
     if (!codecContext)
     {
